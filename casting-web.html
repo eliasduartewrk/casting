@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CASTING</title>
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+/* ── RESET ───────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ── VARIABLES ───────────────────────────────────────────────── */
+:root {
+  --bg:         #0a0a0a;
+  --bg2:        #0e0e0e;
+  --text:       #c8c8b4;
+  --dim:        rgba(200,200,180,0.45);
+  --ghost:      rgba(200,200,180,0.15);
+  --faint:      rgba(200,200,180,0.06);
+  --red:        #ff4444;
+  --border:     rgba(200,200,180,0.08);
+  --border-mid: rgba(200,200,180,0.15);
+  --vt:         'VT323', monospace;
+  --mono:       'Share Tech Mono', monospace;
+}
+
+/* ── BASE ────────────────────────────────────────────────────── */
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.8;
+  letter-spacing: 0.5px;
+  overflow-x: hidden;
+}
+
+a { color: var(--dim); text-decoration: none; transition: color 0.2s; }
+a:hover { color: var(--text); }
+
+/* ── CAPAS FIJAS ─────────────────────────────────────────────── */
+.scanlines {
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 2px,
+    rgba(0,0,0,0.13) 2px, rgba(0,0,0,0.13) 4px
+  );
+  pointer-events: none;
+  z-index: 9000;
+}
+
+.tracking-line {
+  position: fixed; left: 0; right: 0;
+  height: 3px;
+  background: rgba(200,200,180,0.05);
+  animation: tracking 10s linear infinite;
+  pointer-events: none;
+  z-index: 8999;
+}
+
+@keyframes tracking { from { top: -5%; } to { top: 105%; } }
+
+.vhs-rec {
+  position: fixed; top: 14px; left: 16px;
+  font-family: var(--vt);
+  font-size: 14px;
+  color: var(--red);
+  letter-spacing: 3px;
+  z-index: 9001;
+  display: flex; align-items: center; gap: 8px;
+}
+
+.rec-dot {
+  width: 8px; height: 8px;
+  background: var(--red);
+  border-radius: 50%;
+  animation: blink 1.4s step-end infinite;
+}
+
+.vhs-timecode {
+  position: fixed; top: 14px; right: 16px;
+  font-family: var(--vt);
+  font-size: 13px;
+  color: var(--ghost);
+  letter-spacing: 2px;
+  z-index: 9001;
+}
+
+@keyframes blink { 50% { opacity: 0.15; } }
+
+/* ── NAV ─────────────────────────────────────────────────────── */
+nav {
+  position: sticky; top: 0;
+  display: flex; justify-content: center; align-items: center;
+  gap: 40px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--border);
+  background: rgba(10,10,10,0.95);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+}
+
+nav a {
+  font-family: var(--vt);
+  font-size: 16px;
+  color: var(--ghost);
+  letter-spacing: 4px;
+  text-transform: uppercase;
+}
+nav a:hover, nav a.active { color: var(--text); }
+nav a.active::after { content: '_'; animation: blink 1s step-end infinite; }
+
+/* ── HERO ────────────────────────────────────────────────────── */
+#inicio {
+  padding: 80px 40px 60px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.glitch-title {
+  font-family: var(--vt);
+  font-size: 96px;
+  letter-spacing: 18px;
+  color: var(--text);
+  display: inline-block;
+  animation: glitch 5s infinite;
+}
+
+@keyframes glitch {
+  0%,88%,100% { text-shadow: none; transform: none; }
+  89% { text-shadow: -2px 0 var(--red), 2px 0 #4488ff; transform: translateX(2px); }
+  90% { text-shadow: 2px 0 var(--red), -2px 0 #4488ff; transform: translateX(-2px); }
+  91% { text-shadow: none; transform: none; }
+  93% { text-shadow: -1px 0 var(--red); transform: skewX(1.5deg); }
+  94% { text-shadow: none; transform: none; }
+}
+
+.hero-meta {
+  font-family: var(--vt);
+  font-size: 14px;
+  color: var(--ghost);
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  margin-top: 10px;
+}
+
+.corrupted {
+  display: inline-block;
+  animation: corrupt 7s infinite;
+}
+
+@keyframes corrupt {
+  0%,82%,100% { opacity:1; filter:none; letter-spacing:0.5px; }
+  83% { opacity:0.6; filter:blur(0.4px); letter-spacing:3px; }
+  84% { opacity:1; filter:none; letter-spacing:0.5px; }
+  87% { opacity:0.8; letter-spacing:2px; }
+  88% { opacity:1; letter-spacing:0.5px; }
+}
+
+.static-bar {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--ghost) 20%, var(--dim) 50%, var(--ghost) 80%, transparent);
+  opacity: 0.3;
+  margin: 48px 0;
+}
+
+/* ── GRID ─────────────────────────────────────────────────────── */
+.content-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--border);
+  margin: 0;
+}
+
+.panel {
+  background: var(--bg);
+  padding: 40px;
+}
+
+.panel-label {
+  font-family: var(--vt);
+  font-size: 11px;
+  color: var(--ghost);
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  display: block;
+}
+.panel-label::before { content: '// '; }
+
+.panel-title {
+  font-family: var(--vt);
+  font-size: 26px;
+  letter-spacing: 3px;
+  color: var(--text);
+  margin-bottom: 20px;
+  text-transform: uppercase;
+}
+
+.panel-text {
+  font-size: 12px;
+  color: var(--dim);
+  line-height: 2;
+}
+
+/* ── VÍDEO ───────────────────────────────────────────────────── */
+#sinopsis { scroll-margin-top: 60px; }
+
+.video-wrapper {
+  background: #080808;
+  border: 1px solid var(--border);
+  aspect-ratio: 16/9;
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 16px;
+  cursor: pointer;
+}
+
+.video-wrapper::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(
+    90deg, transparent 0px,
+    rgba(255,255,255,0.008) 1px, transparent 2px
+  );
+  z-index: 1;
+}
+
+.video-wrapper video {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  filter: contrast(1.05) saturate(0.6) brightness(0.8);
+}
+
+.play-overlay {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 2;
+  transition: opacity 0.3s;
+}
+
+.play-btn {
+  width: 48px; height: 48px;
+  border: 1px solid var(--border-mid);
+  display: flex; align-items: center; justify-content: center;
+}
+
+.play-btn::after {
+  content: '';
+  border-left: 14px solid var(--dim);
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  margin-left: 4px;
+}
+
+.video-caption {
+  font-size: 10px;
+  color: var(--ghost);
+  letter-spacing: 2px;
+}
+
+/* ── ARCHIVO ─────────────────────────────────────────────────── */
+#archivo { scroll-margin-top: 60px; }
+
+.file-list { margin-top: 8px; }
+
+.file-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--faint);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.file-item:hover .file-name { color: var(--text); }
+
+.file-ext {
+  font-family: var(--vt);
+  font-size: 11px;
+  color: var(--ghost);
+  letter-spacing: 1px;
+  min-width: 44px;
+}
+
+.file-name {
+  font-size: 11px;
+  color: var(--dim);
+  letter-spacing: 1px;
+  flex: 1;
+  transition: color 0.2s;
+}
+
+.file-date {
+  font-size: 10px;
+  color: var(--ghost);
+  letter-spacing: 1px;
+}
+
+.file-corrupted .file-ext,
+.file-corrupted .file-name {
+  color: rgba(255,68,68,0.3);
+  animation: corrupt 4s infinite;
+}
+
+/* ── EQUIPO ───────────────────────────────────────────────────── */
+#equipo { scroll-margin-top: 60px; }
+
+.team-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1px;
+  background: var(--border);
+  margin-top: 8px;
+}
+
+.team-member {
+  background: var(--bg2);
+  padding: 24px;
+}
+
+.member-id {
+  font-family: var(--vt);
+  font-size: 10px;
+  color: var(--ghost);
+  letter-spacing: 4px;
+  margin-bottom: 12px;
+}
+
+.member-name {
+  font-family: var(--vt);
+  font-size: 20px;
+  color: var(--text);
+  letter-spacing: 2px;
+  margin-bottom: 6px;
+}
+
+.member-role {
+  font-size: 11px;
+  color: var(--ghost);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+/* ── DIARIO DE PRODUCCIÓN ─────────────────────────────────────── */
+.diary-entry {
+  padding: 24px 0;
+  border-bottom: 1px solid var(--faint);
+}
+
+.diary-date {
+  font-family: var(--vt);
+  font-size: 11px;
+  color: var(--ghost);
+  letter-spacing: 4px;
+  margin-bottom: 8px;
+}
+
+.diary-text {
+  font-size: 12px;
+  color: var(--dim);
+  line-height: 2;
+}
+
+.diary-status {
+  display: inline-block;
+  font-family: var(--vt);
+  font-size: 10px;
+  letter-spacing: 3px;
+  padding: 2px 8px;
+  border: 1px solid var(--border-mid);
+  color: var(--ghost);
+  margin-top: 10px;
+  text-transform: uppercase;
+}
+
+/* ── CONTACTO ─────────────────────────────────────────────────── */
+#contacto { scroll-margin-top: 60px; }
+
+.form-field { margin-bottom: 24px; }
+
+.form-label {
+  display: block;
+  font-family: var(--vt);
+  font-size: 11px;
+  color: var(--ghost);
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.form-input,
+.form-textarea {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border-mid);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 8px 0;
+  letter-spacing: 1px;
+  outline: none;
+  transition: border-color 0.2s;
+  resize: none;
+}
+
+.form-input:focus,
+.form-textarea:focus { border-bottom-color: var(--dim); }
+
+.form-input::placeholder,
+.form-textarea::placeholder { color: var(--ghost); }
+
+.form-textarea { height: 80px; }
+
+.submit-btn {
+  background: transparent;
+  border: 1px solid var(--border-mid);
+  color: var(--dim);
+  font-family: var(--vt);
+  font-size: 14px;
+  letter-spacing: 4px;
+  padding: 12px 32px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 8px;
+}
+
+.submit-btn:hover { border-color: var(--text); color: var(--text); }
+
+.form-note {
+  font-size: 10px;
+  color: var(--ghost);
+  letter-spacing: 2px;
+  margin-top: 16px;
+}
+
+/* ── SEÑAL ────────────────────────────────────────────────────── */
+.signal-warning {
+  border: 1px solid rgba(255,68,68,0.15);
+  padding: 16px 24px;
+  margin-top: 24px;
+  display: flex; align-items: flex-start; gap: 14px;
+}
+
+.signal-icon {
+  font-family: var(--vt);
+  font-size: 16px;
+  color: rgba(255,68,68,0.4);
+  letter-spacing: 0;
+  animation: blink 2s step-end infinite;
+}
+
+.signal-text {
+  font-size: 11px;
+  color: rgba(255,68,68,0.3);
+  line-height: 1.8;
+  letter-spacing: 0.5px;
+}
+
+/* ── FOOTER ───────────────────────────────────────────────────── */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 20px 40px;
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 1px;
+  background: var(--bg);
+}
+
+.footer-text {
+  font-family: var(--vt);
+  font-size: 11px;
+  color: var(--ghost);
+  letter-spacing: 3px;
+}
+
+/* ── SCROLL ───────────────────────────────────────────────────── */
+::-webkit-scrollbar       { width: 3px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border-mid); }
+::selection { background: rgba(200,200,180,0.12); color: var(--text); }
+
+/* ── RESPONSIVE ───────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .glitch-title { font-size: 56px; letter-spacing: 10px; }
+  .content-grid { grid-template-columns: 1fr; }
+  .team-grid    { grid-template-columns: 1fr; }
+  nav           { gap: 20px; padding: 14px 0; }
+  nav a         { font-size: 14px; letter-spacing: 2px; }
+  .panel        { padding: 28px 20px; }
+  footer        { flex-direction: column; gap: 8px; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- Capas de efecto -->
+<div class="scanlines"></div>
+<div class="tracking-line"></div>
+
+<div class="vhs-rec">
+  <div class="rec-dot"></div>
+  REC
+</div>
+<div class="vhs-timecode" id="timecode">00:00:00:00</div>
+
+<!-- NAV -->
+<nav>
+  <a href="#inicio" class="active">inicio</a>
+  <a href="#sinopsis">sinopsis</a>
+  <a href="#equipo">equipo</a>
+  <a href="#archivo">archivo</a>
+  <a href="#contacto">contacto</a>
+</nav>
+
+<!-- HERO -->
+<section id="inicio">
+  <div class="glitch-title">CASTING</div>
+  <div class="hero-meta">
+    <span class="corrupted">archivo_0001</span>
+    &nbsp;·&nbsp;
+    duración: 10'12"
+    &nbsp;·&nbsp;
+    2025
+  </div>
+  <div class="static-bar"></div>
+</section>
+
+<!-- GRID PRINCIPAL -->
+<div class="content-grid">
+
+  <!-- Panel vídeo -->
+  <div class="panel" id="sinopsis">
+    <span class="panel-label">reproducir</span>
+    <div class="panel-title">toma_final.mp4</div>
+    <div class="video-wrapper" onclick="togglePlay(this)">
+      <!-- Sustituir src por la URL del vídeo real -->
+      <!-- <video src="casting_final.mp4" loop></video> -->
+      <div class="play-overlay">
+        <div class="play-btn"></div>
+      </div>
+    </div>
+    <div class="video-caption">
+      archivo recuperado &nbsp;·&nbsp; calidad degradada &nbsp;·&nbsp; reproducción no garantizada
+    </div>
+  </div>
+
+  <!-- Panel sinopsis -->
+  <div class="panel">
+    <span class="panel-label">sinopsis</span>
+    <div class="panel-title">descripción</div>
+    <p class="panel-text">
+      Una actriz. Una cámara. Una voz que dirige desde fuera de campo.<br><br>
+      La prueba comienza de forma ordinaria.<br>
+      La prueba no termina de forma ordinaria.<br><br>
+      <span class="corrupted">Entre la primera toma y la última,</span>
+      algo se pierde. O algo se encuentra.<br><br>
+      La diferencia, a estas alturas, ya no importa.
+    </p>
+    <div class="signal-warning">
+      <span class="signal-icon">▲</span>
+      <span class="signal-text">
+        algunos fragmentos de este archivo presentan anomalías no documentadas.
+        se recomienda precaución durante la visualización.
+      </span>
+    </div>
+  </div>
+
+  <!-- Panel equipo -->
+  <div class="panel" id="equipo">
+    <span class="panel-label">equipo</span>
+    <div class="panel-title">personal identificado</div>
+    <div class="team-grid">
+      <div class="team-member">
+        <div class="member-id">// ID_01</div>
+        <!-- Sustituir por nombre real -->
+        <div class="member-name">[NOMBRE]</div>
+        <div class="member-role">realización</div>
+      </div>
+      <div class="team-member">
+        <div class="member-id">// ID_02</div>
+        <!-- Sustituir por nombre real -->
+        <div class="member-name">[NOMBRE]</div>
+        <div class="member-role">interpretación</div>
+      </div>
+      <div class="team-member">
+        <div class="member-id">// ID_03</div>
+        <!-- Sustituir por nombre real -->
+        <div class="member-name">[NOMBRE]</div>
+        <div class="member-role">[ROL]</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel diario de producción -->
+  <div class="panel">
+    <span class="panel-label">proceso</span>
+    <div class="panel-title">diario de producción</div>
+    <!-- Añadir entradas reales durante el proceso -->
+    <div class="diary-entry">
+      <div class="diary-date">// ENTRADA_001 &nbsp;·&nbsp; PREPRODUCCIÓN</div>
+      <p class="diary-text">
+        Primera lectura del guion con la actriz. El texto funciona mejor de lo esperado en voz alta.
+        La frase de apertura necesita tiempo para respirar.
+      </p>
+      <span class="diary-status">completado</span>
+    </div>
+    <div class="diary-entry">
+      <div class="diary-date">// ENTRADA_002 &nbsp;·&nbsp; PREPRODUCCIÓN</div>
+      <p class="diary-text">
+        Pruebas de luz natural en el espacio de rodaje. La ventana orientada al norte da
+        una luz más fría y pareja. Funciona mejor para las escenas de desgaste.
+      </p>
+      <span class="diary-status">completado</span>
+    </div>
+    <div class="diary-entry">
+      <div class="diary-date">// ENTRADA_003 &nbsp;·&nbsp; RODAJE</div>
+      <p class="diary-text corrupted">
+        [COMPLETAR DURANTE EL RODAJE]
+      </p>
+      <span class="diary-status" style="color:rgba(255,68,68,0.3); border-color:rgba(255,68,68,0.15);">pendiente</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- SECCIÓN ARCHIVO (ancho completo) -->
+<div class="content-grid" style="margin-top:1px;">
+  <div class="panel" id="archivo">
+    <span class="panel-label">archivos del proyecto</span>
+    <div class="panel-title">registro documental</div>
+    <div class="file-list">
+      <div class="file-item">
+        <span class="file-ext">[PDF]</span>
+        <span class="file-name">guion_casting_v7_final.pdf</span>
+        <span class="file-date">XX/XX/XX</span>
+      </div>
+      <div class="file-item">
+        <span class="file-ext">[PDF]</span>
+        <span class="file-name">memoria_tfg_casting.pdf</span>
+        <span class="file-date">XX/XX/XX</span>
+      </div>
+      <div class="file-item">
+        <span class="file-ext">[IMG]</span>
+        <span class="file-name">fotograma_escena01.jpg</span>
+        <span class="file-date">XX/XX/XX</span>
+      </div>
+      <div class="file-item">
+        <span class="file-ext">[IMG]</span>
+        <span class="file-name">fotograma_escena10.jpg</span>
+        <span class="file-date">XX/XX/XX</span>
+      </div>
+      <div class="file-item">
+        <span class="file-ext">[AUD]</span>
+        <span class="file-name">voz_exterior_raw.wav</span>
+        <span class="file-date">XX/XX/XX</span>
+      </div>
+      <div class="file-item file-corrupted">
+        <span class="file-ext">[???]</span>
+        <span class="file-name">archivo_0009_corrupto</span>
+        <span class="file-date">--/--/--</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel contacto -->
+  <div class="panel" id="contacto">
+    <span class="panel-label">contacto</span>
+    <div class="panel-title">transmitir mensaje</div>
+    <form onsubmit="handleSubmit(event)">
+      <div class="form-field">
+        <label class="form-label">identificación</label>
+        <input class="form-input" type="text" placeholder="nombre_apellido" required>
+      </div>
+      <div class="form-field">
+        <label class="form-label">canal de respuesta</label>
+        <input class="form-input" type="email" placeholder="correo@dominio.com" required>
+      </div>
+      <div class="form-field">
+        <label class="form-label">mensaje</label>
+        <textarea class="form-textarea form-input" placeholder="escribir aquí_"></textarea>
+      </div>
+      <button type="submit" class="submit-btn">transmitir →</button>
+      <p class="form-note">// señal encriptada &nbsp;·&nbsp; respuesta en 48–72h</p>
+    </form>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <span class="footer-text">CASTING &nbsp;·&nbsp; TFG &nbsp;·&nbsp; REALIZACIÓN AUDIOVISUAL</span>
+  <span class="footer-text">señal estable &nbsp;·&nbsp; <span class="corrupted">©&nbsp;20XX</span></span>
+</footer>
+
+<script>
+  /* Timecode en tiempo real */
+  function updateTimecode() {
+    const now = new Date();
+    const h  = String(now.getHours()).padStart(2,'0');
+    const m  = String(now.getMinutes()).padStart(2,'0');
+    const s  = String(now.getSeconds()).padStart(2,'0');
+    const f  = String(Math.floor(now.getMilliseconds() / 40)).padStart(2,'0');
+    document.getElementById('timecode').textContent = `${h}:${m}:${s}:${f}`;
+  }
+  setInterval(updateTimecode, 40);
+  updateTimecode();
+
+  /* Nav activo según scroll */
+  const sections = document.querySelectorAll('section[id], div[id]');
+  const navLinks  = document.querySelectorAll('nav a');
+
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(s => {
+      if (window.scrollY >= s.offsetTop - 80) current = s.id;
+    });
+    navLinks.forEach(a => {
+      a.classList.remove('active');
+      if (a.getAttribute('href') === '#' + current) a.classList.add('active');
+    });
+  });
+
+  /* Reproducción de vídeo al hacer clic */
+  function togglePlay(wrapper) {
+    const video   = wrapper.querySelector('video');
+    const overlay = wrapper.querySelector('.play-overlay');
+    if (!video) return;
+    if (video.paused) {
+      video.play();
+      overlay.style.opacity = '0';
+    } else {
+      video.pause();
+      overlay.style.opacity = '1';
+    }
+  }
+
+  /* Formulario */
+  function handleSubmit(e) {
+    e.preventDefault();
+    const btn = e.target.querySelector('.submit-btn');
+    btn.textContent = 'señal enviada ✓';
+    btn.style.color = 'rgba(200,200,180,0.3)';
+    btn.disabled = true;
+    setTimeout(() => {
+      btn.textContent = 'transmitir →';
+      btn.style.color = '';
+      btn.disabled = false;
+      e.target.reset();
+    }, 3000);
+  }
+
+  /* Efecto de interferencia aleatoria en la línea de tracking */
+  setInterval(() => {
+    const line = document.querySelector('.tracking-line');
+    const h = Math.random() * 2 + 1;
+    line.style.height = h + 'px';
+    line.style.opacity = Math.random() * 0.08 + 0.02;
+  }, 2000);
+</script>
+
+</body>
+</html>
